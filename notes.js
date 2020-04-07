@@ -1,4 +1,5 @@
 const fs = require('fs')
+const chalk = require('chalk')
 
 const getNotes = () => {
     return 'Your notes!'
@@ -6,11 +7,10 @@ const getNotes = () => {
 
 const addNote = (title, body) => {
     const notes = loadNotes();
-    const duplicateNotes = notes.filter((note) => {
-        return note.title === title
-    })
+    const duplicateNote = notes.find((note) => note.title === title)
 
-    if (duplicateNotes.length === 0) {
+
+    if (!duplicateNote) {
 
         notes.push({
             title: title,
@@ -18,15 +18,21 @@ const addNote = (title, body) => {
         })
 
         saveNotes(notes)
-        console.log('New note added.')
+        console.log(chalk.bgGreen('New note added.'))
     } else {
-        console.log('Note title already in use!')
+        console.log(chalk.bgRed('Note title already in use!'))
     }
 }
 
 const saveNotes = (notes) => {
     const dataJSON = JSON.stringify(notes)
     fs.writeFileSync('notes.json', dataJSON)
+}
+
+const listNotes = () => {
+    const notes = loadNotes()
+    console.log(chalk.bgBlue('YOUR NOTES'))
+    notes.map(note => console.log(note.title))
 }
 
 
@@ -40,7 +46,36 @@ const loadNotes = () => {
     }
 }
 
+const removeNote = (title) => {
+    const notes = loadNotes()
+    const notesToKeep = notes.filter((note) => {
+        return note.title !== title
+    })
+
+    if (notesToKeep.length === notes.length) {
+        console.log(chalk.bgRed('No note found.'))
+    } else {
+        saveNotes(notesToKeep)
+        console.log(chalk.bgGreen('Note removed!'))
+    }
+}
+
+const readNote = (noteTitle) => {
+    const notes = loadNotes()
+
+    const noteToRead = notes.find((note) => note.title === noteTitle)
+
+    if (noteToRead) {
+        console.log(chalk.bgBlue(noteToRead.title), '\n' + noteToRead.body)
+    } else {
+        console.log(chalk.bgRed('No note found!'))
+    }
+}
+
 module.exports = {
     getNotes: getNotes,
-    addNote: addNote
+    addNote: addNote,
+    removeNote: removeNote,
+    listNotes: listNotes,
+    readNote: readNote
 }
